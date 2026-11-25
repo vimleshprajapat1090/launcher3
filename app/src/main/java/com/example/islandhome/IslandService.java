@@ -1,5 +1,6 @@
 package com.example.islandhome;
 import android.app.*;import android.content.*;import android.graphics.*;import android.graphics.drawable.*;import android.media.*;import android.media.session.*;import android.os.*;import android.provider.Settings;import android.view.*;import android.widget.*;import java.util.*;
+import android.media.session.MediaController;
 public class IslandService extends Service {
  public static IslandService instance;WindowManager wm;WindowManager.LayoutParams lp;LinearLayout panel,row;TextView title,artist;ImageButton prev,toggle,next;boolean expanded;MediaSessionManager manager;MediaController player;String note="Island Home",detail="No active player";PendingIntent action;Handler h=new Handler(Looper.getMainLooper());
  MediaController.Callback cb=new MediaController.Callback(){public void onPlaybackStateChanged(PlaybackState s){draw();}public void onMetadataChanged(MediaMetadata m){draw();}public void onSessionDestroyed(){setPlayer(null);refresh();}};
