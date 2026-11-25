@@ -10,6 +10,13 @@ on:
   push:
     branches: [main, master]
 
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
 jobs:
   build:
     runs-on: ubuntu-latest
