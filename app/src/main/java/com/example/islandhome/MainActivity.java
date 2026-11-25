@@ -711,4 +711,167 @@ public class MainActivity extends Activity {
 
                     case 3:
                         if (Build.VERSION.SDK_INT >= 33) {
+                                                        requestPermissions(
+                                new String[]{
+                                    "android.permission.POST_NOTIFICATIONS"
+                                },
+                                2
+                            );
+                        }
+                        break;
+
+                    case 4:
+                        if (Settings.canDrawOverlays(this)) {
+                            try {
+                                startForegroundService(
+                                    new Intent(
+                                        this,
+                                        IslandService.class
+                                    )
+                                );
+                            } catch (Exception error) {
+                                Toast.makeText(
+                                    this,
+                                    error.toString(),
+                                    Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Allow overlay permission first",
+                                Toast.LENGTH_LONG
+                            ).show();
+                        }
+                        break;
+
+                    case 5:
+                        stopService(
+                            new Intent(this, IslandService.class)
+                        );
+                        break;
+
+                    case 6:
+                        Intent picker =
+                            new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+                        picker.setType("image/*");
+
+                        picker.addCategory(
+                            Intent.CATEGORY_OPENABLE
+                        );
+
+                        picker.addFlags(
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                        );
+
+                        startActivityForResult(picker, 9);
+                        break;
+
+                    case 7:
+                        prefs.edit().remove("wall").apply();
+                        showHome();
+                        break;
+
+                    case 8:
+                        SeekBar seek = new SeekBar(this);
+                        seek.setMax(160);
+
+                        seek.setProgress(
+                            prefs.getInt("islandY", 4)
+                        );
+
+                        new AlertDialog.Builder(this)
+                            .setTitle("Island top offset (dp)")
+                            .setView(seek)
+                            .setPositiveButton(
+                                "Save",
+                                (offsetDialog, button) -> {
+                                    prefs.edit()
+                                        .putInt(
+                                            "islandY",
+                                            seek.getProgress()
+                                        )
+                                        .apply();
+
+                                    if (
+                                        IslandService.instance != null
+                                    ) {
+                                        IslandService.instance
+                                            .reposition();
+                                    }
+                                }
+                            )
+                            .show();
+                        break;
+
+                    case 9:
+                        prefs.edit().remove("hidden").apply();
+                        showHome();
+                        break;
+
+                    case 10:
+                        open(
+                            new Intent(Settings.ACTION_SETTINGS)
+                        );
+                        break;
+                }
+            })
+            .show();
+    }
+
+    @Override
+    protected void onActivityResult(
+        int requestCode,
+        int resultCode,
+        Intent data
+    ) {
+        super.onActivityResult(
+            requestCode,
+            resultCode,
+            data
+        );
+
+        if (
+            requestCode == 9
+            && resultCode == RESULT_OK
+            && data != null
+            && data.getData() != null
+        ) {
+            Uri uri = data.getData();
+
+            try {
+                getContentResolver()
+                    .takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    );
+            } catch (Exception ignored) {
+            }
+
+            prefs.edit()
+                .putString("wall", uri.toString())
+                .apply();
+
+            showHome();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (library) {
+            showHome();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        loadApps();
+        showHome();
+    }
+}
                         
