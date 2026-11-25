@@ -1,7 +1,63 @@
 package com.example.islandhome;
-import android.service.notification.*;import android.app.*;import android.os.Bundle;
+
+import android.app.Notification;
+import android.os.Bundle;
+import android.service.notification.NotificationListenerService;
+import android.service.notification.StatusBarNotification;
+
 public class IslandListener extends NotificationListenerService {
- public void onNotificationPosted(StatusBarNotification sbn){if(sbn.getPackageName().equals(getPackageName()))return;IslandService s=IslandService.instance;if(s==null)return;Notification n=sbn.getNotification();Bundle e=n.extras;CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE),text=e.getCharSequence(Notification.EXTRA_TEXT);s.update((title==null?sbn.getPackageName():title.toString())+(text==null?"":" — "+text),n.contentIntent);}
- public void onNotificationRemoved(StatusBarNotification sbn){if(IslandService.instance!=null&&!sbn.getPackageName().equals(getPackageName()))IslandService.instance.update("Island Home active",null);}
-  
+
+    @Override
+    public void onListenerConnected() {
+        if (IslandService.instance != null) {
+            IslandService.instance.connectMedia();
+        }
+    }
+
+    @Override
+    public void onNotificationPosted(
+        StatusBarNotification status
+    ) {
+        if (
+            status.getPackageName().equals(getPackageName())
+            || IslandService.instance == null
+        ) {
+            return;
+        }
+
+        Notification notification = status.getNotification();
+        Bundle extras = notification.extras;
+
+        CharSequence title = extras.getCharSequence(
+            Notification.EXTRA_TITLE
+        );
+
+        CharSequence text = extras.getCharSequence(
+            Notification.EXTRA_TEXT
+        );
+
+        IslandService.instance.update(
+            title == null
+                ? status.getPackageName()
+                : title.toString(),
+            text == null ? "" : text.toString(),
+            notification.contentIntent
+        );
+    }
+
+    @Override
+    public void onNotificationRemoved(
+        StatusBarNotification status
+    ) {
+        if (
+            IslandService.instance != null
+            && !status.getPackageName().equals(getPackageName())
+        ) {
+            IslandService.instance.update(
+                "Island Home",
+                "Tap to expand",
+                null
+            );
+        }
+    }
 }
